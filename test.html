@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Game Mobile</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial; }
+        canvas { border: 2px solid #000; }
+        .info { margin-top: 10px; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Test Game Mobile</h1>
+    <canvas id="testCanvas" width="400" height="300"></canvas>
+    <div class="info">
+        <button onclick="testGame()">🚀 Test Game</button>
+        <button onclick="testAssets()">🎨 Test Assets</button>
+        <div id="status">Pronto per il test...</div>
+    </div>
+
+    <script type="module">
+        import { Game } from './game/Game.js';
+        import { ASSETS } from './game/assets.js';
+
+        window.testGame = function() {
+            const canvas = document.getElementById('testCanvas');
+            const status = document.getElementById('status');
+            
+            try {
+                status.textContent = '🔄 Inizializzo gioco...';
+                const game = new Game(canvas, 'default', () => {
+                    status.textContent = '🎯 Game ended callback chiamato';
+                });
+                
+                status.textContent = '✅ Game creato con successo!';
+                
+                // Test single frame
+                game.update();
+                game.draw();
+                
+                status.textContent = '✅ Game funziona! Update e draw completati.';
+                
+                window.testGameInstance = game;
+                
+            } catch (error) {
+                status.textContent = '❌ Errore: ' + error.message;
+                console.error('Errore test game:', error);
+            }
+        };
+
+        window.testAssets = function() {
+            const status = document.getElementById('status');
+            status.textContent = '🔄 Testing assets...';
+            
+            console.log('📋 Assets disponibili:', Object.keys(ASSETS));
+            
+            // Test caricamento di un asset
+            const img = new Image();
+            img.onload = () => {
+                status.textContent = '✅ Asset sleigh caricato con successo!';
+            };
+            img.onerror = (error) => {
+                status.textContent = '❌ Errore caricamento asset: ' + error;
+            };
+            img.src = ASSETS.sleigh;
+        };
+    </script>
+</body>
+</html> 

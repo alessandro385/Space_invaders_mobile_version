@@ -1,0 +1,530 @@
+:root {
+  --primary-color: #1a472a;
+  --secondary-color: #d42c29;
+  --accent-color: #f4d03f;
+  --text-light: #ffffff;
+  --text-dark: #2c3e50;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* NUOVO: Fullscreen avanzato per mobile */
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport per browser recenti */
+  height: calc(var(--vh, 1vh) * 100); /* Fallback con CSS custom property */
+  overflow: hidden;
+  font-family: 'Mountains of Christmas', cursive;
+  background: linear-gradient(45deg, #1a472a, #2e7d32);
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  
+  /* NUOVO: Nasconde barre browser su mobile */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* iOS Safari specifico */
+  -webkit-text-size-adjust: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  
+  /* Android specifico */
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+}
+
+/* NUOVO: Fullscreen forzato per contenitore principale */
+#app {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+#gameContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #87ceeb 0%, #ffffff 100%);
+  overflow: hidden;
+}
+
+/* Canvas fullscreen ottimizzato */
+canvas {
+  display: block;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  touch-action: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  object-fit: cover; /* Assicura copertura completa */
+}
+
+/* HUD Mobile - Ridotto e ottimizzato */
+.mobile-hud {
+  position: fixed;
+  top: env(safe-area-inset-top, 8px); /* Rispetta safe area iOS */
+  left: env(safe-area-inset-left, 8px);
+  right: env(safe-area-inset-right, 8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 100;
+  pointer-events: none;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.hud-left, .hud-right {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 6px 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+  font-size: 14px;
+}
+
+.hud-center {
+  background: rgba(255, 0, 0, 0.8);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+/* Controlli Touch Ottimizzati per fullscreen */
+#touchControlsOverlay {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 0);
+  left: env(safe-area-inset-left, 0);
+  right: env(safe-area-inset-right, 0);
+  top: 0;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 15px;
+  padding-bottom: calc(15px + env(safe-area-inset-bottom, 0));
+}
+
+/* Joystick Virtuale ottimizzato */
+.virtual-joystick {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  pointer-events: all;
+  background: rgba(255, 255, 255, 0.25);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.joystick-knob {
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, #ffffff, #e0e0e0);
+  border: 2px solid #333;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.1s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.joystick-knob.active {
+  background: radial-gradient(circle, #ffeb3b, #fbc02d);
+  box-shadow: 0 0 12px rgba(255, 235, 59, 0.6);
+}
+
+/* Pulsante Fuoco ottimizzato */
+#fireButtonTouch {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff4444, #cc0000);
+  border: 3px solid #ffffff;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  pointer-events: all;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  transition: all 0.15s ease;
+}
+
+#fireButtonTouch:active {
+  transform: scale(0.9);
+  background: radial-gradient(circle, #ff6666, #ff0000);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 0, 0, 0.8);
+}
+
+/* Menu ottimizzato per fullscreen */
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  background: linear-gradient(135deg, #1a472a, #2e7d32);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.menu h1 {
+  font-size: 2.2rem;
+  color: var(--accent-color);
+  text-shadow: 3px 3px 6px var(--shadow-color);
+  margin: 0 0 25px 0;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.menu button {
+  background: linear-gradient(45deg, var(--secondary-color), #ff4444);
+  color: var(--text-light);
+  border: none;
+  padding: 18px 35px;
+  font-size: 22px;
+  font-family: 'Mountains of Christmas', cursive;
+  border-radius: 20px;
+  box-shadow: 0 6px 12px var(--shadow-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 8px;
+  min-width: 240px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.menu button:active {
+  transform: scale(0.95);
+  box-shadow: 0 3px 6px var(--shadow-color);
+}
+
+/* Schermate di Game Over e Vittoria ottimizzate */
+.game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  text-align: center;
+}
+
+.overlay-title {
+  font-size: 2.5rem;
+  color: var(--accent-color);
+  text-shadow: 3px 3px 6px var(--shadow-color);
+  margin-bottom: 20px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.overlay-score {
+  font-size: 1.3rem;
+  color: white;
+  margin-bottom: 25px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.overlay-button {
+  background: linear-gradient(45deg, #4CAF50, #66BB6A);
+  color: white;
+  border: none;
+  padding: 18px 35px;
+  font-size: 18px;
+  font-family: 'Mountains of Christmas', cursive;
+  border-radius: 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 8px;
+  min-width: 260px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.overlay-button.secondary {
+  background: linear-gradient(45deg, #FF9800, #FFB74D);
+}
+
+/* Indicatori di Status */
+.status-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  z-index: 200;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+/* Animazioni */
+@keyframes glow {
+  from { text-shadow: 0 0 20px var(--accent-color); }
+  to { text-shadow: 0 0 30px var(--accent-color), 0 0 40px var(--accent-color); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20%, 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Classe nascosta */
+.hidden {
+  display: none !important;
+}
+
+/* NUOVO: Gestione orientamento migliorata */
+@media screen and (orientation: portrait) {
+  .orientation-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .orientation-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+  }
+}
+
+/* Nascondere warning in landscape */
+@media screen and (orientation: landscape) {
+  .orientation-warning {
+    display: none !important;
+  }
+}
+
+/* NUOVO: Media queries responsive ottimizzate */
+@media screen and (max-width: 480px) {
+  .mobile-hud {
+    font-size: 12px;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+  }
+  
+  .hud-left, .hud-right {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  
+  .hud-center {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+  
+  .virtual-joystick {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .joystick-knob {
+    width: 42px;
+    height: 42px;
+  }
+  
+  #fireButtonTouch {
+    width: 75px;
+    height: 75px;
+    font-size: 26px;
+  }
+  
+  #touchControlsOverlay {
+    padding: 12px;
+  }
+  
+  .menu h1 {
+    font-size: 1.8rem;
+  }
+  
+  .menu button {
+    padding: 14px 25px;
+    font-size: 18px;
+    min-width: 200px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .mobile-hud {
+    font-size: 18px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  
+  .hud-left, .hud-right {
+    padding: 8px 12px;
+  }
+  
+  .hud-center {
+    padding: 8px 16px;
+    font-size: 20px;
+  }
+  
+  .virtual-joystick {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .joystick-knob {
+    width: 60px;
+    height: 60px;
+  }
+  
+  #fireButtonTouch {
+    width: 110px;
+    height: 110px;
+    font-size: 38px;
+  }
+  
+  #touchControlsOverlay {
+    padding: 25px;
+  }
+  
+  .menu h1 {
+    font-size: 2.8rem;
+  }
+  
+  .menu button {
+    padding: 22px 40px;
+    font-size: 26px;
+    min-width: 280px;
+  }
+}
+
+@media screen and (max-height: 500px) {
+  .mobile-hud {
+    top: 2px;
+    font-size: 14px;
+  }
+  
+  .hud-center {
+    font-size: 16px;
+  }
+  
+  #touchControlsOverlay {
+    padding: 8px;
+  }
+  
+  .virtual-joystick {
+    width: 85px;
+    height: 85px;
+  }
+  
+  .joystick-knob {
+    width: 35px;
+    height: 35px;
+  }
+  
+  #fireButtonTouch {
+    width: 65px;
+    height: 65px;
+    font-size: 22px;
+  }
+  
+  .menu button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 4px;
+  }
+} 

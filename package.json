@@ -1,0 +1,48 @@
+{
+  "name": "babbo-natale-mobile",
+  "version": "1.0.0",
+  "description": "Gioco mobile di Babbo Natale - Endless Runner natalizio",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "http-server -p 8000 -c-1",
+    "build": "npm run copy-assets",
+    "copy-assets": "mkdir -p dist && cp -r *.html *.css *.js game/ dist/",
+    "android:dev": "cap run android",
+    "android:build": "cap build android",
+    "android:sync": "cap sync android",
+    "ios:dev": "cap run ios",
+    "ios:build": "cap build ios",
+    "capacitor:add": "cap add",
+    "capacitor:sync": "cap sync",
+    "capacitor:serve": "cap serve"
+  },
+  "keywords": [
+    "game",
+    "mobile",
+    "javascript",
+    "html5",
+    "natale",
+    "endless-runner",
+    "touch-controls"
+  ],
+  "author": "Mobile Game Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/cli": "^5.5.1",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^5.5.1",
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/haptics": "^5.0.6",
+    "@capacitor/status-bar": "^5.0.6",
+    "@capacitor/splash-screen": "^5.0.6",
+    "@capacitor/screen-orientation": "^5.0.6",
+    "@capacitor/device": "^5.0.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alessandro385/babbo-natale-mobile.git"
+  }
+} 
