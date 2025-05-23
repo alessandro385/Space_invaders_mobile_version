@@ -1,5 +1,6 @@
 import { Game } from './game/Game.js';
 import { ASSETS } from './game/assets.js';
+import { SLEIGH_SPRITES } from './game/assets/sleighs.js';
 
 class MobileGameManager {
   constructor() {
@@ -9,6 +10,10 @@ class MobileGameManager {
     this.fireButton = null;
     this.isPlaying = false;
     this.touchStartTime = 0;
+    
+    // NUOVO: Selezione slitta e modalità fuoco amico
+    this.selectedSleigh = 'sleigh'; // Default
+    this.friendlyFireMode = true; // Default: fuoco amico attivo
     
     // Touch tracking
     this.activeTouches = new Map();
@@ -20,6 +25,11 @@ class MobileGameManager {
     // Movement state
     this.moveX = 0;
     this.moveY = 0;
+    
+    // NUOVO: Sistema sparo continuo con hold - CAMBIATO: 0.8 secondi
+    this.isFiring = false;
+    this.fireInterval = null;
+    this.fireRate = 800; // 0.8 secondi in millisecondi
     
     this.init();
   }
@@ -95,6 +105,7 @@ class MobileGameManager {
           <div class="hud-right">
             <div id="levelDisplay">Liv. 1</div>
             <div id="distanceDisplay">📏 0m</div>
+            <div id="friendlyFireIndicator" class="friendly-fire-indicator">🔥 FUOCO AMICO</div>
           </div>
         </div>
         
@@ -106,11 +117,56 @@ class MobileGameManager {
           <button id="fireButtonTouch">❄️</button>
         </div>
         
-        <!-- Menu -->
+        <!-- Menu Principale -->
         <div class="menu" id="gameMenu">
           <h1>🎅 La Corsa di Babbo Natale Mobile 🎄</h1>
           <button id="startGameBtn">🚀 Inizia l'Avventura! 🎁</button>
           <button id="instructionsBtn">📋 Come Giocare</button>
+          
+          <!-- NUOVO: Opzioni modalità fuoco amico -->
+          <div class="game-options">
+            <h3>⚙️ Opzioni</h3>
+            <div class="option-row">
+              <label for="friendlyFireToggle">🔥 Modalità Fuoco Amico:</label>
+              <button id="friendlyFireToggle" class="toggle-button active">ON</button>
+            </div>
+            <p class="option-description">
+              <strong>ON:</strong> I tuoi colpi distruggono anche regali e bonus<br>
+              <strong>OFF:</strong> I tuoi colpi distruggono solo ostacoli
+            </p>
+          </div>
+        </div>
+        
+        <!-- NUOVO: Menu Selezione Slitta - Layout Orizzontale Mobile -->
+        <div class="menu hidden" id="sleighSelectionMenu">
+          <h2>🚁 Scegli la tua Slitta</h2>
+          <div class="sleigh-options-mobile">
+            <div class="sleigh-option-mobile" data-sleigh="sleigh">
+              <div class="sleigh-preview-mobile">
+                <img id="sleighPreview1" src="" alt="Slitta Classica">
+              </div>
+              <h3>Classica</h3>
+              <p>Tradizionale</p>
+              <button class="select-sleigh-btn" data-sleigh="sleigh">Seleziona</button>
+            </div>
+            <div class="sleigh-option-mobile" data-sleigh="sleighRed">
+              <div class="sleigh-preview-mobile">
+                <img id="sleighPreview2" src="" alt="Slitta Rossa">
+              </div>
+              <h3>Rossa</h3>
+              <p>Sportiva</p>
+              <button class="select-sleigh-btn" data-sleigh="sleighRed">Seleziona</button>
+            </div>
+            <div class="sleigh-option-mobile" data-sleigh="sleighGreen">
+              <div class="sleigh-preview-mobile">
+                <img id="sleighPreview3" src="" alt="Slitta Elfica">
+              </div>
+              <h3>Elfica</h3>
+              <p>Magica</p>
+              <button class="select-sleigh-btn" data-sleigh="sleighGreen">Seleziona</button>
+            </div>
+          </div>
+          <button id="backToMenuFromSleigh">⬅️ Torna al Menu</button>
         </div>
         
         <!-- Istruzioni -->
@@ -118,11 +174,12 @@ class MobileGameManager {
           <h2>🎮 Come Giocare</h2>
           <p style="text-align: left; max-width: 300px; line-height: 1.6;">
             🕹️ <strong>Movimento:</strong> Usa il joystick virtuale<br>
-            ❄️ <strong>Sparo continuo:</strong> Tocca per attivare/disattivare<br>
+            ❄️ <strong>Sparo continuo:</strong> Tieni premuto per sparare ogni 0.9s<br>
             🎁 <strong>Raccogli regali</strong> per punti<br>
             ❤️ <strong>Prendi i cuori</strong> per vite extra<br>
             🚫 <strong>Evita gli ostacoli</strong> o distruggili!<br>
-            📏 <strong>Progressione:</strong> Livelli basati su distanza e regali
+            📏 <strong>Progressione:</strong> Livelli basati su distanza e regali<br>
+            🔥 <strong>Fuoco Amico:</strong> Scegli se distruggere anche i bonus
           </p>
           <button id="backToMenuBtn">⬅️ Torna al Menu</button>
         </div>
@@ -196,12 +253,27 @@ class MobileGameManager {
   }
 
   setupEventListeners() {
-    document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
+    // CAMBIATO: "Inizia l'avventura" ora va alla selezione slitta automaticamente
+    document.getElementById('startGameBtn').addEventListener('click', () => this.showSleighSelection());
     document.getElementById('instructionsBtn').addEventListener('click', () => this.showInstructions());
     document.getElementById('backToMenuBtn').addEventListener('click', () => this.showMenu());
-
-    this.setupJoystick();
     
+    // NUOVO: Eventi per selezione slitta
+    document.getElementById('backToMenuFromSleigh').addEventListener('click', () => this.showMenu());
+    
+    // NUOVO: Eventi per selezione delle slitte - ORA AVVIA IL GIOCO DIRETTAMENTE
+    document.querySelectorAll('.select-sleigh-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const sleighType = e.target.getAttribute('data-sleigh');
+        this.selectSleighAndStartGame(sleighType);
+      });
+    });
+    
+    // NUOVO: Toggle modalità fuoco amico
+    document.getElementById('friendlyFireToggle').addEventListener('click', () => this.toggleFriendlyFire());
+    
+    // Touch e joystick
+    this.setupJoystick();
     this.setupFireButton();
     
     document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -211,6 +283,9 @@ class MobileGameManager {
         e.preventDefault();
       }
     }, { passive: false });
+    
+    // NUOVO: Carica le immagini SVG delle slitte
+    this.loadSleighImages();
   }
 
   setupJoystick() {
@@ -311,71 +386,77 @@ class MobileGameManager {
   }
 
   setupFireButton() {
-    // Sistema sparo continuo - toggle on/off invece di hold
-    let isFiring = false;
-    let fireInterval = null;
-    let currentFireRate = 120; // Rate base sparo
+    // NUOVO: Sistema sparo continuo con hold - tieni premuto per sparare ogni 0.9s
     
     const startContinuousFiring = () => {
-      if (!isFiring && this.game) {
-        isFiring = true;
+      if (!this.isFiring && this.game) {
+        this.isFiring = true;
         
         // Primo sparo immediato
         this.game.fireSnowball();
         
-        // Avvia sparo continuo
+        // Avvia sparo continuo ogni 0.9 secondi
         const continuousFire = () => {
-          if (isFiring && this.game) {
+          if (this.isFiring && this.game) {
             this.game.fireSnowball();
-            fireInterval = setTimeout(continuousFire, currentFireRate);
+            this.fireInterval = setTimeout(continuousFire, this.fireRate);
           }
         };
         
         // Inizia il ciclo dopo il primo sparo
-        fireInterval = setTimeout(continuousFire, currentFireRate);
+        this.fireInterval = setTimeout(continuousFire, this.fireRate);
         
-        console.log('🔫 Sparo continuo ATTIVATO');
+        console.log('🔫 Sparo continuo AVVIATO - ogni 0.9s');
         
-        // Feedback visivo - cambia colore pulsante
+        // Feedback visivo - cambia aspetto pulsante
         this.fireButton.style.backgroundColor = '#ff6b6b';
         this.fireButton.style.boxShadow = '0 0 15px rgba(255, 107, 107, 0.8)';
+        this.fireButton.style.transform = 'scale(1.1)';
       }
     };
     
     const stopContinuousFiring = () => {
-      if (isFiring) {
-        isFiring = false;
+      if (this.isFiring) {
+        this.isFiring = false;
         
-        if (fireInterval) {
-          clearTimeout(fireInterval);
-          fireInterval = null;
+        if (this.fireInterval) {
+          clearTimeout(this.fireInterval);
+          this.fireInterval = null;
         }
         
-        console.log('🔫 Sparo continuo DISATTIVATO');
+        console.log('🔫 Sparo continuo FERMATO');
         
         // Ripristina aspetto pulsante
         this.fireButton.style.backgroundColor = '';
         this.fireButton.style.boxShadow = '';
-      }
-    };
-    
-    const toggleFiring = () => {
-      if (isFiring) {
-        stopContinuousFiring();
-      } else {
-        startContinuousFiring();
-      }
-      
-      // Feedback aptico
-      if (navigator.vibrate) {
-        navigator.vibrate(isFiring ? [100, 50, 100] : [50]);
+        this.fireButton.style.transform = '';
       }
     };
 
-    // Evento touch per toggle (tap per attivare/disattivare)
+    // Eventi touch per hold - NUOVO: touchstart avvia, touchend ferma
     this.fireButton.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      toggleFiring();
+      startContinuousFiring();
+      
+      // Feedback aptico
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    });
+    
+    this.fireButton.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      stopContinuousFiring();
+    });
+    
+    this.fireButton.addEventListener('touchcancel', (e) => {
+      e.preventDefault();
+      stopContinuousFiring();
+    });
+    
+    // Previeni context menu
+    this.fireButton.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
     });
 
     // Gestisci quando il gioco si ferma
@@ -390,6 +471,7 @@ class MobileGameManager {
     
     document.getElementById('gameMenu').classList.remove('hidden');
     document.getElementById('instructionsMenu').classList.add('hidden');
+    document.getElementById('sleighSelectionMenu').classList.add('hidden');
     document.getElementById('mobileHUD').classList.add('hidden');
     document.getElementById('touchControlsOverlay').style.display = 'none';
     this.isPlaying = false;
@@ -398,20 +480,27 @@ class MobileGameManager {
   showInstructions() {
     document.getElementById('gameMenu').classList.add('hidden');
     document.getElementById('instructionsMenu').classList.remove('hidden');
+    document.getElementById('sleighSelectionMenu').classList.add('hidden');
   }
 
   startGame() {
     document.getElementById('gameMenu').classList.add('hidden');
     document.getElementById('instructionsMenu').classList.add('hidden');
+    document.getElementById('sleighSelectionMenu').classList.add('hidden');
     document.getElementById('mobileHUD').classList.remove('hidden');
     document.getElementById('touchControlsOverlay').style.display = 'flex';
     
     this.isPlaying = true;
     this.setupCanvas();
-    this.game = new Game(this.canvas, 'default', () => this.onGameEnd());
+    this.game = new Game(this.canvas, this.selectedSleigh, () => this.onGameEnd());
+    if (this.game.setFriendlyFireMode) {
+      this.game.setFriendlyFireMode(this.friendlyFireMode);
+    }
     this.startGameLoop();
     
-    this.showStatusIndicator('🚀 Gioco Iniziato!', 2000);
+    this.updateFriendlyFireIndicator();
+    
+    this.showStatusIndicator(`🚀 Gioco Iniziato con ${this.getSleighName(this.selectedSleigh)}!`, 2000);
   }
 
   setupCanvas() {
@@ -489,7 +578,7 @@ class MobileGameManager {
       <div class="overlay-title">Game Over!</div>
       <div class="overlay-score">🎁 Regali Raccolti: ${this.game.state.score}</div>
       <button class="overlay-button" onclick="mobileGame.restartGame()">🔄 Riprova</button>
-      <button class="overlay-button secondary" onclick="mobileGame.showMenu()">🏠 Menu</button>
+      <button class="overlay-button secondary" onclick="mobileGame.goToMenu()">🏠 Menu</button>
     `;
     document.getElementById('gameContainer').appendChild(overlay);
     
@@ -500,6 +589,12 @@ class MobileGameManager {
 
   showVictory() {
     this.isPlaying = false;
+    
+    // Ferma lo sparo continuo anche in vittoria
+    if (this.stopFiring) {
+      this.stopFiring();
+    }
+    
     document.getElementById('touchControlsOverlay').style.display = 'none';
     document.getElementById('mobileHUD').classList.add('hidden');
     
@@ -521,6 +616,12 @@ class MobileGameManager {
 
   restartGame() {
     this.clearOverlays();
+    
+    // Ferma lo sparo continuo prima di riavviare
+    if (this.stopFiring) {
+      this.stopFiring();
+    }
+    
     if (this.game) {
       this.game.restart();
     }
@@ -529,14 +630,37 @@ class MobileGameManager {
 
   nextZone() {
     this.clearOverlays();
+    
+    // Ferma lo sparo continuo prima di avanzare
+    if (this.stopFiring) {
+      this.stopFiring();
+    }
+    
     if (this.game) {
       this.game.advanceToNextZone();
     }
     this.startGame();
   }
 
-  onGameEnd() {
+  // NUOVO: Metodo per tornare al menu principale
+  goToMenu() {
+    this.clearOverlays();
+    
+    // Ferma lo sparo continuo
+    if (this.stopFiring) {
+      this.stopFiring();
+    }
+    
+    // Reset completo del gioco
+    this.isPlaying = false;
+    this.game = null;
+    
+    // Mostra il menu
     this.showMenu();
+  }
+
+  onGameEnd() {
+    this.goToMenu();
   }
 
   clearOverlays() {
@@ -552,6 +676,78 @@ class MobileGameManager {
     setTimeout(() => {
       indicator.classList.add('hidden');
     }, duration);
+  }
+
+  // NUOVO: Metodi per gestire le nuove funzionalità
+  showSleighSelection() {
+    document.getElementById('gameMenu').classList.add('hidden');
+    document.getElementById('sleighSelectionMenu').classList.remove('hidden');
+    this.updateSleighSelection();
+  }
+  
+  selectSleighAndStartGame(sleighType) {
+    this.selectedSleigh = sleighType;
+    this.showStatusIndicator(`🚁 Slitta ${this.getSleighName(sleighType)} selezionata!`, 1500);
+    
+    // Avvia il gioco dopo una breve pausa per mostrare la selezione
+    setTimeout(() => {
+      this.startGame();
+    }, 500);
+  }
+  
+  updateSleighSelection() {
+    // Rimuovi selezione precedente
+    document.querySelectorAll('.sleigh-option-mobile').forEach(option => {
+      option.classList.remove('selected');
+    });
+    
+    // Aggiungi selezione corrente
+    const selectedOption = document.querySelector(`[data-sleigh="${this.selectedSleigh}"]`);
+    if (selectedOption) {
+      selectedOption.classList.add('selected');
+    }
+  }
+  
+  getSleighName(sleighType) {
+    const names = {
+      'sleigh': 'Classica',
+      'sleighRed': 'Rossa',
+      'sleighGreen': 'Elfica'
+    };
+    return names[sleighType] || 'Classica';
+  }
+  
+  toggleFriendlyFire() {
+    this.friendlyFireMode = !this.friendlyFireMode;
+    const toggle = document.getElementById('friendlyFireToggle');
+    
+    if (this.friendlyFireMode) {
+      toggle.textContent = 'ON';
+      toggle.classList.add('active');
+      this.showStatusIndicator('🔥 Fuoco Amico ATTIVATO - Distruggi tutto!', 2000);
+    } else {
+      toggle.textContent = 'OFF';
+      toggle.classList.remove('active');
+      this.showStatusIndicator('🛡️ Fuoco Amico DISATTIVATO - Solo ostacoli!', 2000);
+    }
+  }
+
+  updateFriendlyFireIndicator() {
+    const indicator = document.getElementById('friendlyFireIndicator');
+    if (this.friendlyFireMode) {
+      indicator.textContent = '🔥 FUOCO AMICO';
+      indicator.classList.add('active');
+    } else {
+      indicator.textContent = '🛡️ SOLO OSTACOLI';
+      indicator.classList.remove('active');
+    }
+  }
+
+  // NUOVO: Carica le vere immagini SVG delle slitte
+  loadSleighImages() {
+    document.getElementById('sleighPreview1').src = SLEIGH_SPRITES.sleigh;
+    document.getElementById('sleighPreview2').src = SLEIGH_SPRITES.sleighRed;
+    document.getElementById('sleighPreview3').src = SLEIGH_SPRITES.sleighGreen;
   }
 }
 

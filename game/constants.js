@@ -4,11 +4,11 @@ export const GAME_CONFIG = {
   // NUOVO: Sistema velocità migliorato per mobile - 20m/s target
   BASE_SPEED: 200, // Aumentato per raggiungere 20m/s
   SLEIGH_SPEED: {
-    BASE: 8,           // Velocità base slitta (pixel/frame)
-    MAX_VELOCITY: 15,  // Velocità massima
-    ACCELERATION: 0.9, // Accelerazione touch
-    FRICTION: 0.82,    // Attrito per movimento naturale
-    BOOST_MULTIPLIER: 1.8  // Moltiplicatore per boost velocità
+    BASE: 6,           // RIDOTTO: Velocità base slitta (era 8)
+    MAX_VELOCITY: 10,  // RIDOTTO: Velocità massima (era 15)
+    ACCELERATION: 0.7, // RIDOTTO: Accelerazione touch (era 0.9)
+    FRICTION: 0.85,    // AUMENTATO: Attrito per movimento più controllato (era 0.82)
+    BOOST_MULTIPLIER: 1.6  // RIDOTTO: Moltiplicatore per boost velocità (era 1.8)
   },
   // NUOVO: Sistema sparo migliorato
   FIRING_SYSTEM: {
@@ -71,9 +71,9 @@ export const SPRITE_SIZES = {
 // Configurazioni touch specifiche per mobile
 export const TOUCH_CONFIG = {
   // Joystick
-  JOYSTICK_DEAD_ZONE: 0.15, // Zona morta per evitare drift
-  JOYSTICK_SENSITIVITY: 1.3, // AUMENTATO: Sensibilità del movimento
-  JOYSTICK_MAX_DISTANCE: 45, // AUMENTATO: Distanza massima dal centro
+  JOYSTICK_DEAD_ZONE: 0.2, // AUMENTATO: Zona morta per evitare drift (era 0.15)
+  JOYSTICK_SENSITIVITY: 0.8, // RIDOTTO: Sensibilità del movimento (era 1.3)
+  JOYSTICK_MAX_DISTANCE: 40, // RIDOTTO: Distanza massima dal centro (era 45)
   
   // NUOVO: Sistema sparo touch migliorato
   FIRE_BUTTON: {
@@ -98,26 +98,37 @@ export const TOUCH_CONFIG = {
   RENDER_SCALE: 1.0 // Scala rendering (1.0 = nativo)
 };
 
-// NUOVA SEZIONE: Configurazioni spawn bilanciate
+// NUOVA SEZIONE: Configurazioni spawn bilanciate - AUMENTATE
 export const SPAWN_CONFIG = {
-  // Probabilità spawn oggetti (su 100)
-  OBSTACLE_CHANCE: 65, // AUMENTATO (era implicito 40-50)
-  GIFT_CHANCE: 25, // RIDOTTO per bilanciare
-  BONUS_CHANCE: 8, // Bonus vari
-  LIFE_CHANCE: 2, // DRASTICAMENTE RIDOTTO (era ~10)
+  // Probabilità spawn oggetti (su 100) - AUMENTATE SIGNIFICATIVAMENTE
+  OBSTACLE_CHANCE: 70, // AUMENTATO (era 65)
+  GIFT_CHANCE: 20, // RIDOTTO per fare spazio a più ostacoli
+  BONUS_CHANCE: 12, // AUMENTATO (era 8) - più power-ups 
+  LIFE_CHANCE: 3, // Leggermente aumentato
   
-  // Numero oggetti per wave
-  MIN_OBSTACLES_PER_WAVE: 3, // AUMENTATO (era 2)
-  MAX_OBSTACLES_PER_WAVE: 8, // AUMENTATO (era 6)
+  // Numero oggetti per wave - AUMENTATI SIGNIFICATIVAMENTE
+  MIN_OBSTACLES_PER_WAVE: 4, // AUMENTATO (era 3)
+  MAX_OBSTACLES_PER_WAVE: 12, // AUMENTATO (era 8) - molto più intenso!
   MIN_GIFTS_PER_WAVE: 1,
-  MAX_GIFTS_PER_WAVE: 3,
+  MAX_GIFTS_PER_WAVE: 4, // AUMENTATO (era 3)
   
-  // Intervalli spawn per livello
+  // Intervalli spawn per livello - PIÙ FREQUENTI
   LEVEL_SPAWN_RATES: [
-    { level: 1, interval: 1000, difficulty: 0.8 },
-    { level: 2, interval: 800, difficulty: 1.0 }, 
-    { level: 3, interval: 600, difficulty: 1.3 },
-    { level: 4, interval: 500, difficulty: 1.5 }
+    { level: 1, interval: 800, difficulty: 0.8 }, // RIDOTTO (era 1000)
+    { level: 2, interval: 650, difficulty: 1.0 }, // RIDOTTO (era 800)
+    { level: 3, interval: 500, difficulty: 1.3 }, // RIDOTTO (era 600)
+    { level: 4, interval: 350, difficulty: 1.8 }  // RIDOTTO (era 500) + AUMENTATA difficoltà
+  ],
+  
+  // NUOVO: Progressione spawn basata su distanza
+  DISTANCE_MULTIPLIERS: [
+    { distance: 0, spawnMultiplier: 1.0 },      // 0-500m: normale
+    { distance: 500, spawnMultiplier: 1.2 },    // 500-1000m: +20%
+    { distance: 1000, spawnMultiplier: 1.4 },   // 1000-1500m: +40%
+    { distance: 1500, spawnMultiplier: 1.6 },   // 1500-2000m: +60%
+    { distance: 2000, spawnMultiplier: 1.8 },   // 2000-2500m: +80%
+    { distance: 2500, spawnMultiplier: 2.0 },   // 2500-3000m: +100%
+    { distance: 3000, spawnMultiplier: 2.5 }    // 3000m+: +150% (finale intenso!)
   ]
 };
 
@@ -157,10 +168,10 @@ export const DIFFICULTY_CONFIG = {
     { level: 4, distance: 3600, gifts: 35 }      // Boss finale: 3600m, totale 35 regali
   ],
   
-  // Spawn rates ottimizzati per mobile
-  BASE_SPAWN_INTERVAL: 900, // RIDOTTO (era 1200)
-  MIN_SPAWN_INTERVAL: 400, // RIDOTTO (era 800)
-  SPAWN_DECREASE_RATE: 0.96, // AUMENTATA progressione (era 0.98)
+  // Spawn rates ottimizzati per mobile - RIDOTTI ULTERIORMENTE
+  BASE_SPAWN_INTERVAL: 700, // RIDOTTO (era 900)
+  MIN_SPAWN_INTERVAL: 300, // RIDOTTO (era 400)
+  SPAWN_DECREASE_RATE: 0.94, // AUMENTATA progressione (era 0.96) - diventa più veloce
   
   // Vita bonus MOLTO MENO frequente su mobile
   LIFE_BONUS_INTERVAL: 600, // Ogni 600m (30 secondi a 20m/s)

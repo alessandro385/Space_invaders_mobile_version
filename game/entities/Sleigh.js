@@ -36,9 +36,19 @@ export class Sleigh {
 
   async loadImage() {
     try {
-      const assetKey = this.type === 'default' ? 'sleigh' : 
-                      this.type === 'red' ? 'sleighRed' : 
-                      this.type === 'green' ? 'sleighGreen' : 'sleigh';
+      // CORRETTO: Usa i nomi corretti delle chiavi delle slitte
+      let assetKey;
+      if (this.type === 'sleigh' || this.type === 'default') {
+        assetKey = 'sleigh';
+      } else if (this.type === 'sleighRed') {
+        assetKey = 'sleighRed';
+      } else if (this.type === 'sleighGreen') {
+        assetKey = 'sleighGreen';
+      } else {
+        assetKey = 'sleigh'; // Default fallback
+      }
+      
+      console.log(`🚁 Caricamento slitta tipo: ${this.type} -> asset: ${assetKey}`);
       this.image = await loadImage(ASSETS[assetKey]);
     } catch (error) {
       console.error(`Errore nel caricamento dell'immagine della slitta (${this.type}):`, error);
@@ -64,8 +74,15 @@ export class Sleigh {
     this.x += this.velocityX;
     this.y += this.velocityY;
     
-    // Calcola inclinazione basata sul movimento orizzontale
-    this.targetTilt = this.velocityX * 0.03; // Leggera inclinazione
+    // CORRETTO: Calcola inclinazione SOLO per movimento orizzontale significativo
+    // La slitta si inclina solo quando si muove lateralmente, non per movimento verticale
+    if (Math.abs(inputX) > 0.3) {
+      // Solo movimento orizzontale significativo causa inclinazione
+      this.targetTilt = inputX * 0.15; // Inclinazione basata sull'input, non sulla velocità
+    } else {
+      // Quando non c'è movimento orizzontale, torna dritta
+      this.targetTilt = 0;
+    }
     
     // Mantieni entro i limiti dello schermo con margine
     const margin = 5;
@@ -98,10 +115,19 @@ export class Sleigh {
       this.velocityY *= this.friction;
       this.x += this.velocityX;
       this.y += this.velocityY;
+      
+      // CORRETTO: Quando non si muove, forza il ritorno a posizione dritta
+      this.targetTilt = 0;
     }
     
-    // Aggiorna inclinazione gradualmente
-    this.tilt += (this.targetTilt - this.tilt) * 0.15;
+    // MIGLIORATO: Aggiorna inclinazione più velocemente per tornare dritta
+    const tiltSpeed = Math.abs(this.targetTilt) > 0 ? 0.15 : 0.25; // Più veloce per tornare a 0
+    this.tilt += (this.targetTilt - this.tilt) * tiltSpeed;
+    
+    // Forza a zero se molto vicino per evitare oscillazioni
+    if (Math.abs(this.tilt) < 0.01) {
+      this.tilt = 0;
+    }
     
     // Aggiorna scia per effetto visivo
     if (this.isMoving || Math.abs(this.velocityX) > 1 || Math.abs(this.velocityY) > 1) {

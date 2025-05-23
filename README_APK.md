@@ -1,5 +1,96 @@
 # 🎅 Babbo Natale Mobile - Genera APK
 
+Un'avventura natalizia mobile ottimizzata per dispositivi Android, con controlli touch intuitivi e nuove funzionalità di personalizzazione!
+
+## 🚀 Nuove Funzionalità
+
+### 🚁 Selezione della Slitta
+- **3 slitte uniche** tra cui scegliere:
+  - **Slitta Classica**: La tradizionale slitta di Babbo Natale con renna marrone
+  - **Slitta Rossa**: Versione sportiva con design più veloce 
+  - **Slitta Elfica**: Slitta magica con renna bianca e design elfico
+- Selezione accessibile dal menu principale
+
+### ❄️ Sistema Sparo Migliorato
+- **Sparo continuo con hold**: Tieni premuto il pulsante per sparare ogni **0.8 secondi** (migliorato!)
+- **Rilascia per fermare**: Quando rilasci il pulsante, la slitta smette di sparare
+- **Feedback visivo**: Il pulsante cambia aspetto quando attivo
+- **Feedback aptico**: Vibrazione al tocco (su dispositivi supportati)
+
+### 🔥 Modalità Fuoco Amico
+Personalizza il comportamento dei tuoi colpi:
+
+#### **🔥 MODALITÀ ATTIVA (Default)**
+- I tuoi colpi distruggono **tutti gli oggetti** (ostacoli, regali, bonus)
+- Comportamento classico del gioco
+- Ideale per azione intensa
+
+#### **🛡️ MODALITÀ DISATTIVA**
+- I tuoi colpi colpiscono **solo gli ostacoli**
+- **Regali e bonus sono immuni** ai colpi
+- Strategia più precisa richiesta
+- Ideale per gameplay strategico
+
+### 📈 Progressione Intensificata
+- **Spawn aumentato**: Fino a 12 oggetti per wave (era 8)
+- **Frequenza incrementale**: Ogni 500m la frequenza di spawn aumenta del 20%
+- **Intensità finale**: A 3000m+ la frequenza raddoppia per un finale esplosivo
+- **Bilanciamento**: 70% ostacoli, 12% bonus, mantenendo la sfida bilanciata
+
+## 🎮 Come Giocare
+
+### 🚁 Primo Avvio - AGGIORNATO!
+1. **Clicca "🚀 Inizia l'Avventura!"** → Ti porta automaticamente alla selezione slitta
+2. **Scegli tra 3 slitte uniche** con le loro vere immagini SVG:
+   - 🛷 **Classica**: Renna marrone, slitta tradizionale
+   - 🛷 **Rossa**: Design sportivo veloce
+   - 🛷 **Elfica**: Renna bianca magica
+3. **Seleziona la tua slitta** → Il gioco inizia automaticamente!
+4. **Configura la modalità fuoco amico** nelle opzioni del menu principale
+
+### 🕹️ Controlli
+- **Joystick virtuale (sinistra)**: Muovi Babbo Natale
+  - Movimento fluido a 360 gradi
+  - Zona morta configurabile per precisione
+- **Pulsante sparo (destra)**: Spara palle di neve
+  - **Tieni premuto** = sparo continuo ogni 0.9 secondi
+  - **Rilascia** = ferma lo sparo
+  - Feedback visivo quando attivo
+
+### 🎯 Obiettivi
+- **Raccogli regali** 🎁 per aumentare il punteggio
+- **Evita o distruggi ostacoli** (alberi, pupazzi di neve, lampioni)
+- **Raccogli power-ups**:
+  - ❤️ **Vita extra**: Aumenta le tue vite
+  - ⚡ **Velocità**: Muoviti più velocemente
+  - 🔥 **Sparo triplo**: Spara 3 palle di neve contemporaneamente
+- **Sopravvivi** e **progredisci** attraverso 4 livelli per sezione
+
+### 🔥 Modalità Fuoco Amico
+
+#### Quando è **ATTIVA** (🔥 FUOCO AMICO):
+- Le tue palle di neve distruggono **qualsiasi oggetto**
+- Puoi distruggere regali e bonus per errore
+- Azione più intensa e caotica
+
+#### Quando è **DISATTIVA** (🛡️ SOLO OSTACOLI):
+- Le tue palle di neve attraversano regali e bonus senza danneggiarli
+- Puoi mirare liberamente senza perdere bonus
+- Gameplay più strategico e preciso
+
+### 🏆 Progressione
+- Ogni **sezione** ha 4 livelli
+- Requisiti per avanzare: **distanza percorsa** + **regali raccolti**
+- **Boss finale** alla fine di ogni sezione
+- Difficoltà crescente con più ostacoli e velocità aumentata
+
+### 📱 Interfaccia HUD
+- **❤️ Vite** (angolo alto-sinistra)
+- **🎁 Punteggio** (regali raccolti)
+- **📏 Distanza** percorsa in metri
+- **Liv.** attuale
+- **🔥/🛡️ Indicatore modalità** fuoco amico
+
 ## 📱 Il Tuo Gioco è Pronto per Android!
 
 Ho analizzato il tuo progetto e configurato tutto il necessario per generare un APK del gioco "Babbo Natale Mobile". Il gioco è un fantastico endless runner natalizio con:

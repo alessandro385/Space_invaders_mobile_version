@@ -16,6 +16,9 @@ export class Game {
     this.sleighType = sleighType;
     this.onGameEnd = onGameEnd;
     
+    // NUOVO: Modalità fuoco amico
+    this.friendlyFireMode = true; // Default: attiva
+    
     // Game entities
     this.sleigh = new Sleigh(canvas, sleighType);
     this.objects = [];
@@ -360,12 +363,38 @@ export class Game {
     // Adattamento della sezione corrente
     baseInterval = this.currentSection.calculateSpawnRate(baseInterval, this.state.level);
     
+    // NUOVO: Adattamento basato su distanza percorsa
+    const distanceMultiplier = this.getDistanceSpawnMultiplier();
+    baseInterval = baseInterval / distanceMultiplier;
+    
     // Adattamento basato su difficoltà generale
     const difficultyMultiplier = Math.min(this.state.difficultyMultiplier, 2.0);
     baseInterval = baseInterval / Math.max(difficultyMultiplier, 0.5);
     
-    // Limiti per mobile
-    return Math.max(400, Math.min(1200, baseInterval));
+    // Limiti per mobile - RIDOTTI per più spawn
+    return Math.max(300, Math.min(1000, baseInterval)); // Era 400-1200
+  }
+  
+  // NUOVO: Calcola moltiplicatore spawn basato su distanza
+  getDistanceSpawnMultiplier() {
+    const distance = this.state.distanceTraveled;
+    const { DISTANCE_MULTIPLIERS } = SPAWN_CONFIG;
+    
+    // Trova il moltiplicatore appropriato per la distanza corrente
+    let multiplier = 1.0;
+    for (let i = DISTANCE_MULTIPLIERS.length - 1; i >= 0; i--) {
+      if (distance >= DISTANCE_MULTIPLIERS[i].distance) {
+        multiplier = DISTANCE_MULTIPLIERS[i].spawnMultiplier;
+        break;
+      }
+    }
+    
+    // Log per debug ogni 500m
+    if (Math.floor(distance) % 500 === 0 && distance > 0) {
+      console.log(`📈 Distanza: ${Math.floor(distance)}m | Moltiplicatore spawn: x${multiplier}`);
+    }
+    
+    return multiplier;
   }
 
   calculateSpawnSpeed() {
@@ -569,10 +598,35 @@ export class Game {
   handleSnowballObjectCollision(snowball, obj, snowballIndex, objIndex) {
     snowball.active = false;
     
-    if (obj.type !== 'gift' && obj.type !== 'extraLife') {
-      obj.takeDamage(1);
-      if (!obj.active) {
-        this.state.addScore(5); // Points for destroying obstacles
+    // NUOVO: Logica modalità fuoco amico
+    const isBonus = (obj.type === 'gift' || obj.type === 'extraLife' || obj.type === 'moveSpeedBoost' || obj.type === 'snowBlower');
+    
+    if (this.friendlyFireMode) {
+      // MODALITÀ FUOCO AMICO ATTIVA: distruggi tutto (comportamento originale)
+      if (!isBonus) {
+        // Solo gli ostacoli danno punti quando distrutti
+        obj.takeDamage(1);
+        if (!obj.active) {
+          this.state.addScore(5); // Points for destroying obstacles
+        }
+      } else {
+        // Bonus vengono distrutti ma non danno punti aggiuntivi
+        obj.active = false;
+        console.log(`🔥 Fuoco amico: ${obj.type} distrutto`);
+      }
+    } else {
+      // MODALITÀ FUOCO AMICO DISATTIVA: colpisci solo ostacoli
+      if (!isBonus) {
+        // Danneggia solo gli ostacoli
+        obj.takeDamage(1);
+        if (!obj.active) {
+          this.state.addScore(5); // Points for destroying obstacles
+        }
+        console.log(`🎯 Ostacolo ${obj.type} colpito`);
+      } else {
+        // I bonus sono immuni: il proiettile attraversa senza effetto
+        snowball.active = true; // Il proiettile continua il suo percorso
+        console.log(`🛡️ Bonus ${obj.type} immune al fuoco`);
       }
     }
   }
@@ -712,5 +766,11 @@ export class Game {
     PERFORMANCE_CONFIG.TARGET_FPS = 30;
     
     console.log('🔋 Game optimized for battery saving');
+  }
+
+  // NUOVO: Metodo per attivare/disattivare la modalità fuoco amico
+  setFriendlyFireMode(mode) {
+    this.friendlyFireMode = mode;
+    console.log(`🔥 Friendly Fire Mode: ${this.friendlyFireMode ? 'Attiva' : 'Disattiva'}`);
   }
 } 
